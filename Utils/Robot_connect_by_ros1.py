@@ -5,6 +5,9 @@ from std_msgs.msg import Header
 from geometry_msgs.msg import (PoseStamped, Pose, Point, Quaternion,)
 
 class ros1_function(object):
+    def __init__(self, rate = 10):
+        self._start_time = rospy.get_time()
+        self.rate = rate
     def ros1_init_ros_node(self, node_name, anonymous=True):
         rospy.init_node(node_name, anonymous=anonymous)
 
@@ -30,6 +33,16 @@ class ros1_function(object):
         else:
             print("log mode unknown, please check")
 
+    def ros1_done(self):
+        if rospy.is_shutdown():
+            return True
+
+    def ros1_time_stamp(self):
+        return rospy.get_time() - self._start_time
+
+    def ros1_rate(self):
+        return rospy.Rate(self.rate)
+
 class Sawyer_connect_ros1(ros1_function):
     def __init__(self, arm_name):
         super(ros1_function, self).__init__()
@@ -44,7 +57,7 @@ class Sawyer_connect_ros1(ros1_function):
         header = Header(stamp=rospy.Time.now(), frame_id='base')
         poses = {str(self.arm_name): PoseStamped(header=header, pose=Pose(position=ros_position, orientation=ros_orient))}
         ikreq.pose_stamp.append(poses[self.arm_name])
-        ikreq.tip_names.append('right_hand')
+        ikreq.tip_names.append(self.arm_name + '_hand')
         try:
             rospy.wait_for_service(self.inverse_kinematics_srv_name, 5.0)
             resp = iksvc(ikreq)
@@ -52,11 +65,8 @@ class Sawyer_connect_ros1(ros1_function):
             rospy.logerr("Service call failed: %s" % (e,))
             return 1
         if (resp.result_type[0] > 0):
-            print("SUCCESS - Valid Joint Solution Found:")
-            # Format solution into Limb API-compatible dictionary
             limb_joints = dict(zip(resp.joints[0].name, resp.joints[0].position))
             return limb_joints
         else:
-            print("INVALID POSE - No Valid Joint Solution Found.")
-        return -1
+            return -1
 

@@ -1,5 +1,6 @@
 /build
-/tmp
+/tmp/log
+/tmp/taj
 *.log
 .idea/
 __pycache__/
