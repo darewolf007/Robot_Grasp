@@ -1,31 +1,32 @@
-from .ProcessGrasp import Process_Grasp
-from Scene_Detector.VMRN_detector import VMRN_detector
-from utils.Robot_state_transform import transform_uv_to_xy, transfrom_angle_to_ri
-from Robot_Tools.Camera_Ros1 import KinectDK
-import argparse
+from Grasp_Anything.Detect_Grasp.ProcessGrasp import Process_Grasp
+from Grasp_Anything.Scene_Detector.VMRN_detector import VMRN_detector
+from Grasp_Anything.utils.Robot_state_transform import transform_uv_to_xy, transfrom_angle_to_ri
+from Grasp_Anything.Robot_Tools.Camera_Ros1 import KinectDK
+from Grasp_Anything.utils.python_function import init_logging, read_yaml_file
 import scipy.io as scio
 import cv2
 import numpy as np
-
-def parse_args():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--limb", type=str, default="right", help="which robot arm to process grasp")
-    args = parser.parse_args()
-    return args
+import os
+import Grasp_Anything.Configs
 
 class VMRN_Grasp(Process_Grasp):
-    def __init__(self):
-        self.vmrn = VMRN_detector()
-        self.camera = KinectDK()
-        self.eye_hand_path = "/home/haowensun/robot/vmrn/change_vmrn/dataset/calibrate_para/extpara.mat"
-        self.camera_K = None
-        self.camera_D = None
-        self.eyehand_T = None
-        self.eyehand_R = None
+    def __init__(self, config_path):
+        super().__init__()
+        self.set_path(config_path)
         self.get_camera_param()
-        self.image_index = 0
+        init_logging(self.config_param.get("detector_name"), self.log_path)
+        self.vmrn = VMRN_detector(self.vmrn_path, self.image_path)
+        self.camera = KinectDK()
 
-    def rest(self):
+    def set_path(self, config_path):
+        self.config_param = read_yaml_file(config_path)
+        base_path = os.path.dirname(Grasp_Anything.Configs.__file__)
+        self.log_path = base_path + self.config_param.get("log_file_path")
+        self.image_path = base_path + self.config_param.get("image_path")
+        self.eye_hand_path = base_path + self.config_param.get("eye_hand_path")
+        self.vmrn_path = base_path + self.config_param.get("vmrn_detector_yaml")
+
+    def reset(self):
         self.image_index = 0
 
     def load_eyehand(self):
@@ -56,11 +57,11 @@ class VMRN_Grasp(Process_Grasp):
 
     def _run_once(self):
         color_img, depth_img = self.get_image(self.image_index)
-        self.vmrn.run_detector()
+        self.vmrn.run_detector(self.image_index)
         if self.vmrn.relation_result.current_target.id is not -1:
             if len(self.vmrn.grasp_result)>0:
-                id = self.vmrn.relation_result.current_target.id
-                grasps = self.vmrn.grasp_result[id].obj_grasp.grasp
+                obj_id = self.vmrn.relation_result.current_target.id
+                grasps = self.vmrn.grasp_result[obj_id].obj_grasp.grasp
                 uv = [int(grasps[0]), int(grasps[1]), 1]
                 depth = depth_img[uv[1]][uv[0]].astype(np.float32)
                 grasp_center = transform_uv_to_xy(self.eyehand_T, self.eyehand_R, self.camera_K, uv, depth)

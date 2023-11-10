@@ -1,5 +1,7 @@
-from Detect_Grasp.Sawyer_VMRN_Grasp import VMRN_Grasp
+from Grasp_Anything.Detect_Grasp.Sawyer_VMRN_Grasp import VMRN_Grasp
 from Robot_Grasp.srv import VmrnDetection, VmrnDetectionResponse
+import os
+script_dir = os.path.dirname(os.path.abspath(__file__))
 
 def vmrn_grasp_callback(request):
     reponse = VmrnDetectionResponse()

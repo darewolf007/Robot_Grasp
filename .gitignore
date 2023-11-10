@@ -1,6 +1,8 @@
 /build
-/tmp/log
-/tmp/taj
+/scripts/tmp/log
+/scripts/tmp/image
+/devel
+/.vscode
 *.log
 .idea/
 __pycache__/

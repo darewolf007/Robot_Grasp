@@ -1,0 +1,6 @@
+server_host: "http://10.184.17.177"
+server_port: 8000
+username: "sunhaowen"
+password: "sunhaowen"
+wait_time: 60
+image_path: "/home/haowen/hw_Robot_code/Robot_Grasp/scripts/tmp/image/"

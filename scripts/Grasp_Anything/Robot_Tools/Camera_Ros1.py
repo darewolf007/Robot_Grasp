@@ -16,7 +16,6 @@ class KinectDK(object):
         self.queue_color = Queue.Queue(3)
         self.queue_depth = Queue.Queue(3)
         self.queue_left_hand = Queue.Queue(3)
-        # self.bridge = cv_bridge.CvBridge()
         self.rgb_info = None
         self.depth_info = None
         self.hbody_sub = rospy.Subscriber("/body_tracking_data", MarkerArray, self.hbody_callback)
@@ -40,7 +39,6 @@ class KinectDK(object):
         self.rgbinfo_sub.unregister()
 
     def depthinfo_callback(self, camera_info):
-        print('here')
         self.depth_info = camera_info
         self.depthinfo_sub.unregister()
 
@@ -49,39 +47,25 @@ class KinectDK(object):
             self.queue_hbody.get_nowait()
         self.queue_hbody.put(marker_msg.markers)
 
-    def color_callback(self, image_msg):  # bgra
-        # cv_image = self.bridge.imgmsg_to_cv2(image_msg, desired_encoding="passthrough")
-        # if self.queue_color.full():
-        #     self.queue_color.get()
-        # self.queue_color.put(np.asarray(cv_image))
-        print("color")
+    def color_callback(self, image_msg):
         cv_image = ros_numpy.numpify(image_msg)
         if self.queue_color.full():
             self.queue_color.get()
         self.queue_color.put(np.asarray(cv_image))
 
-    def left_hand_callback(self, image_msg):  # left hand image
-        # cv_image = self.bridge.imgmsg_to_cv2(image_msg, desired_encoding="passthrough")
-        # if self.queue_left_hand.full():
-        #     self.queue_left_hand.get()
-        # self.queue_left_hand.put(np.asarray(cv_image))
+    def left_hand_callback(self, image_msg):
         cv_image = ros_numpy.numpify(image_msg)
         if self.queue_left_hand.full():
             self.queue_left_hand.get()
         self.queue_left_hand.put(np.asarray(cv_image))
 
-    def depth_callback(self, image_msg):  # float32
-        # cv_image = self.bridge.imgmsg_to_cv2(image_msg, desired_encoding="passthrough")
-        # if self.queue_depth.full():
-        #     self.queue_depth.get()
-        # self.queue_depth.put(np.asarray(cv_image))
+    def depth_callback(self, image_msg):
         cv_image = ros_numpy.numpify(image_msg)
         if self.queue_depth.full():
             self.queue_depth.get()
         self.queue_depth.put(np.asarray(cv_image))
 
     def release(self):
-        print("kinect_release")
         self.hbody_sub.unregister()
         self.color_sub.unregister()
         self.depth_sub.unregister()
