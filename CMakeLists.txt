@@ -53,21 +53,12 @@ find_package(catkin REQUIRED COMPONENTS
 ## Generate messages in the 'msg' folder
 add_message_files(
    FILES
-   bbox2d.msg
-   result.msg
-   vmrngrasp.msg
-   vmrnresult.msg
-   relationresult.msg
-   relationtarget.msg
  )
 
 ## Generate services in the 'srv' folder
 add_service_files(
    FILES
-   GraspDetection.srv
-   ObjDetection.srv
    VmrnDetection.srv
-   VmrnRelation.srv
  )
 
 ## Generate actions in the 'action' folder
@@ -172,10 +163,6 @@ include_directories(
 ## Mark executable scripts (Python etc.) for installation
 ## in contrast to setup.py, you can choose the destination
 catkin_install_python(PROGRAMS
-  #  scripts/obj_detection.py
-  scripts/vmrn/demo_sawyer_vmrn.py
-  # scripts/vmrn/vmrn_relation.py
-  # scripts/vmrn/VmrnService.py
    DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
  )
 
