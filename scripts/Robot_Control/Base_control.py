@@ -72,6 +72,12 @@ class Base_control(object):
     def get_grasp_offset(self):
         return self.__grasp_offset
 
+    def set_putdown_position(self,put_down_position):
+        self.__put_down_position = put_down_position
+
+    def get_putdown_position(self):
+        return self.__put_down_position
+
     # set and record robot state
     def set_gripper_velocity(self, speed):
         pass
@@ -117,5 +123,11 @@ class Base_control(object):
         pass
 
     def run_grasp(self):
+        pass
+
+    def putdown_object(self):
+        pass
+
+    def run(self):
         pass
 

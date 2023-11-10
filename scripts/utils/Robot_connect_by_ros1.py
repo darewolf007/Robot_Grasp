@@ -3,6 +3,7 @@ import logging
 from intera_core_msgs.srv import (SolvePositionIK, SolvePositionIKRequest,)
 from std_msgs.msg import Header
 from geometry_msgs.msg import (PoseStamped, Pose, Point, Quaternion,)
+from Robot_Grasp.srv import VmrnDetection, VmrnDetectionResponse
 
 class ros1_function(object):
     def __init__(self, rate = 10):
@@ -69,4 +70,9 @@ class Sawyer_connect_ros1(ros1_function):
             return limb_joints
         else:
             return -1
+
+    def ros1_receive_grasp_infor(self):
+        obj_grasp = rospy.ServiceProxy('vmrn_detection', VmrnDetection)
+        response_grasp = obj_grasp.call(True)
+        return response_grasp.grasp_center, response_grasp.grasp_ori
 

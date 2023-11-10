@@ -1,4 +1,4 @@
-class Process_grasp(object):
+class Process_Grasp(object):
     def __init__(self):
         pass
 

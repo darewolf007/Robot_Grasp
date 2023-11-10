@@ -1,9 +1,10 @@
-from Base_control import Base_control
-from Utils import Robot_connect_by_ros1
+from .Base_control import Base_control
+from utils import Robot_connect_by_ros1
 from intera_interface import CHECK_VERSION
 import intera_interface
-from Utils.python3_logging import init_logging
+from utils.python_function import init_logging
 import logging
+import numpy as np
 
 class Sawyer_control(Base_control):
     def __init__(self):
@@ -73,19 +74,32 @@ class Sawyer_control(Base_control):
         success_check, limb_joints = self.arm_inverse_kinematics(position, orient)
         if success_check is True:
             self.limb_handle.move_to_joint_positions(limb_joints)
-            logging.info("success move robot to [ {} ]".format(self.))
+            # logging.info("success move robot to [ {} ]".format(self.))
             return True
         else:
             return False
 
-    # TODO test1
+    # TODO test1 and add try except
+    def run(self, offset = np.array([0, 0 ,0])):
+        self.receive_scene_info()
+        self.set_grasp_offset(offset)
+        self.run_grasp()
+        self.putdown_object()
+
+    def receive_scene_info(self):
+        position, orient = Robot_connect_by_ros1.ros1_receive_grasp_infor()
+        self.set_grasp_param(position, orient)
+
+    def putdown_object(self, putdown_orient = [0,1,0,0]):
+        self.move_robot_to_point(self.get_putdown_position(), putdown_orient)
+        self.open_robot_gripper()
+
     def move_robot_to_joint_angles(self, angles):
         joint_angles = dict(zip(self.limb_handle.joint_names(), angles))
         self.limb_handle.move_to_joint_positions(joint_angles)
 
-    def set_grasp_param(self, grasp_center, grasp_offset, grasp_orient):
+    def set_grasp_param(self, grasp_center, grasp_orient):
         self.set_grasp_center(grasp_center)
-        self.set_grasp_offset(grasp_offset)
         self.set_grasp_orient(grasp_orient)
 
     def run_grasp(self):
