@@ -17,6 +17,7 @@ class VMRN_Grasp(Process_Grasp):
         init_logging(self.config_param.get("detector_name"), self.log_path)
         self.vmrn = VMRN_detector(self.vmrn_path, self.image_path)
         self.camera = KinectDK()
+        self.load_eyehand()
 
     def set_path(self, config_path):
         self.config_param = read_yaml_file(config_path)

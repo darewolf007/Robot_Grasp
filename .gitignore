@@ -4,5 +4,6 @@
 /devel
 /.vscode
 *.log
+*.pyc
 .idea/
 __pycache__/
