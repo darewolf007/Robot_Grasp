@@ -13,10 +13,10 @@ class VMRN_Grasp(Process_Grasp):
     def __init__(self, config_path):
         super().__init__()
         self.set_path(config_path)
+        self.camera = KinectDK()
         self.get_camera_param()
         init_logging(self.config_param.get("detector_name"), self.log_path)
         self.vmrn = VMRN_detector(self.vmrn_path, self.image_path)
-        self.camera = KinectDK()
         self.load_eyehand()
 
     def set_path(self, config_path):
