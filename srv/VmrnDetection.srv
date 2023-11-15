@@ -1,4 +1,4 @@
 bool flag_detect
 ---
 geometry_msgs/Point grasp_center
-geometry_msgs/Vector3 grasp_ori
+geometry_msgs/Quaternion grasp_ori

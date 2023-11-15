@@ -1,5 +1,5 @@
 eye_hand_path: "/calibrate_para/extpara.mat"
 vmrn_detector_yaml: "/VMRN_Detector.yaml"
-log_file_path: "/../../tmp/log"
+log_file_path: "/../../tmp/log/"
 detector_name: "VMRN"
 image_path: "/../../tmp/image/"

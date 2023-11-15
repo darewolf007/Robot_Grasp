@@ -8,6 +8,7 @@ import cv2
 import numpy as np
 import os
 import Grasp_Anything.Configs
+import logging
 
 class VMRN_Grasp(Process_Grasp):
     def __init__(self, config_path):
@@ -18,6 +19,8 @@ class VMRN_Grasp(Process_Grasp):
         init_logging(self.config_param.get("detector_name"), self.log_path)
         self.vmrn = VMRN_detector(self.vmrn_path, self.image_path)
         self.load_eyehand()
+        logger = logging.getLogger(self.config_param.get("detector_name"))
+        logger.info("Starting VMRN Grasp")
 
     def set_path(self, config_path):
         self.config_param = read_yaml_file(config_path)
@@ -59,13 +62,13 @@ class VMRN_Grasp(Process_Grasp):
     def _run_once(self):
         color_img, depth_img = self.get_image(self.image_index)
         self.vmrn.run_detector(self.image_index)
-        if self.vmrn.relation_result.current_target.id is not -1:
+        if self.vmrn.relation_result.current_target.id != -1:
             if len(self.vmrn.grasp_result)>0:
                 obj_id = self.vmrn.relation_result.current_target.id
                 grasps = self.vmrn.grasp_result[obj_id].obj_grasp.grasp
                 uv = [int(grasps[0]), int(grasps[1]), 1]
                 depth = depth_img[uv[1]][uv[0]].astype(np.float32)
-                grasp_center = transform_uv_to_xy(self.eyehand_T, self.eyehand_R, self.camera_K, uv, depth)
+                grasp_center = transform_uv_to_xy(self.eyehand_R, self.eyehand_T, self.camera_K, uv, depth)
                 grasp_ori = transfrom_angle_to_ri(grasps[2])
                 self.image_index += 1
                 return grasp_center, grasp_ori

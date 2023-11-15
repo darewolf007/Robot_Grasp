@@ -1,14 +1,14 @@
 from .Base_control import Base_control
-from utils import Robot_connect_by_ros1
+from Grasp_Anything.utils import Robot_connect_by_ros1
 from intera_interface import CHECK_VERSION
 import intera_interface
-from utils.python_function import init_logging
+# from Grasp_Anything.utils.python_function import init_logging
 import logging
 import numpy as np
 
 class Sawyer_control(Base_control):
     def __init__(self):
-        super().__init__()
+        # super().__init__()
         #TODO add argparse to these param
         self.joint_name = None
         self.arm_cuff = None
@@ -20,10 +20,10 @@ class Sawyer_control(Base_control):
         self.trajectory_path = "./"
         self.trajectory_name = "Sawyer_traj"
         self.ros_node = Robot_connect_by_ros1.Sawyer_connect_ros1(self.arm_name)
-        init_logging(self.robot_name, self.log_file_path)
+        # init_logging(self.robot_name, self.log_file_path)
 
     def init_ros_node(self):
-        self.ros_node.ros1_init_ros_node(self.ros_node_name)
+        # self.ros_node.ros1_init_ros_node(self.ros_node_name)
         logging.info('successful init ros node, node name is {}'.format(self.ros_node_name))
 
     def enable_robot(self):
@@ -87,8 +87,10 @@ class Sawyer_control(Base_control):
         self.putdown_object()
 
     def receive_scene_info(self):
-        position, orient = Robot_connect_by_ros1.ros1_receive_grasp_infor()
-        self.set_grasp_param(position, orient)
+        position, orient = self.ros_node.ros1_receive_grasp_infor()
+        position_test = [position.x, position.y, position.z]
+        orient_test =[orient.x, orient.y, orient.z, orient.w]
+        self.set_grasp_param(np.array(position_test), np.array(orient_test))
 
     def putdown_object(self, putdown_orient = [0,1,0,0]):
         self.move_robot_to_point(self.get_putdown_position(), putdown_orient)

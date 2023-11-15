@@ -15,16 +15,16 @@ class VMRN_detector(Scene_Detector):
             self.image_path = self.config_param.get("image_path")
         else:
             self.image_path = image_path
-
+        self.logger = logging.getLogger(self.config_param.get("detector_name"))
     def data_process(self, data):
         grasp_result = []
         for i in range(len(data['obj_cls'])):
             grasp_result.append(VMRN_Grasp_Result(data['obj_cls'][i], bbox2d(data['obj_bbox_xyxy'][i]), VMRN_Grasp(data['obj_grasp_grasp'][i])))
+            self.logger.info("VMRN_Grasp_Result obj_cls is {}".format(grasp_result[i].obj_cls))
+            self.logger.info("VMRN_Grasp_Result obj_bbox_xyxy is {}".format(grasp_result[i].obj_bbox))
+            self.logger.info("VMRN_Grasp_Result obj_grasp_grasp is {}".format(grasp_result[i].obj_grasp))
         relation_result = VMRN_Relation_Result(Relation_Target(data['relation_result'][-1]['current_target'][0], data['relation_result'][-1]['current_target'][1]))
-        logging.info("VMRN_Grasp_Result obj_cls is {}".format(grasp_result.obj_cls))
-        logging.info("VMRN_Grasp_Result obj_bbox_xyxy is {}".format(grasp_result.obj_bbox))
-        logging.info("VMRN_Grasp_Result obj_grasp_grasp is {}".format(grasp_result.obj_grasp))
-        logging.info("VMRN_Relation_Result relation_result is {}".format(relation_result.current_target))
+        self.logger.info("VMRN_Relation_Result relation_result is {}".format(relation_result.current_target))
         return grasp_result, relation_result
 
     async def connect_network(self, index):
@@ -40,10 +40,10 @@ class VMRN_detector(Scene_Detector):
                                          auth=(username, password), timeout=timeout)
             if response.status_code == 200:
                 data = response.json()
-                logging.info("Response data obtained from the server")
+                self.logger.info("Response data obtained from the server")
                 self.grasp_result, self.relation_result = self.data_process(data)
             else:
-                logging.info("POST request failed. status code: {}".format(response.status_code))
+                self.logger.info("POST request failed. status code: {}".format(response.status_code))
 
     def run_detector(self, index):
         asyncio.run(self.connect_network(index))
