@@ -1,60 +1,68 @@
 from .Base_control import Base_control
 from Grasp_Anything.utils import Robot_connect_by_ros1
 from intera_interface import CHECK_VERSION
+from Grasp_Anything.utils.python_function import init_logging, read_yaml_file
 import intera_interface
-# from Grasp_Anything.utils.python_function import init_logging
 import logging
 import numpy as np
+import os
 
 class Sawyer_control(Base_control):
-    def __init__(self):
-        # super().__init__()
-        #TODO add argparse to these param
-        self.joint_name = None
-        self.arm_cuff = None
-        self.robot_name = "Sawyer"
-        self.arm_name = "right"
+    def __init__(self, config_path):
+        self.set_param(config_path)
+        self.set_path()
+        self.init_log()
+
+    def set_param(self, config_path):
+        self.config_param = read_yaml_file(config_path)
+        self.robot_name = self.config_param.get("robot_name")
+        self.arm_name = self.config_param.get("arm_name")
         self.gripper_name = self.arm_name + "_gripper"
-        self.ros_node_name = "intera_grasp"
-        self.log_file_path = "./"
-        self.trajectory_path = "./"
-        self.trajectory_name = "Sawyer_traj"
+        self.ros_node_name = self.config_param.get("ros_node_name")
         self.ros_node = Robot_connect_by_ros1.Sawyer_connect_ros1(self.arm_name)
-        # init_logging(self.robot_name, self.log_file_path)
+
+    def set_path(self):
+        base_path = os.path.dirname(Grasp_Anything.Configs.__file__)
+        self.log_file_path = base_path + self.config_param.get("log_file_path")
+        self.trajectory_path = base_path + self.config_param.get("trajectory_path")
+
+    def init_log(self):
+        init_logging(self.config_param.get("log_name"), self.log_file_path)
+        self.logger = logging.getLogger(self.config_param.get("log_name"))
 
     def init_ros_node(self):
-        # self.ros_node.ros1_init_ros_node(self.ros_node_name)
-        logging.info('successful init ros node, node name is {}'.format(self.ros_node_name))
+        self.ros_node.ros1_init_ros_node(self.ros_node_name)
+        self.logger.info('successful init ros node, node name is {}'.format(self.ros_node_name))
 
     def enable_robot(self):
         self.robot = intera_interface.RobotEnable()
         self.robot.enable()
-        logging.info('successful enable robot !!!!!')
+        self.logger.info('successful enable robot !!!!!')
 
     def init_arm(self):
         self.limb_handle = intera_interface.Limb(self.arm_name)
         self.set_init_position(self.limb_handle.endpoint_pose()['position']) #TODO test what is endpoint joint or end-effector
-        logging.info('successful initialize arm !!!!!')
-        logging.info('end effector init-position is {}'.format(self.get_init_position()))
+        self.logger.info('successful initialize arm !!!!!')
+        self.logger.info('end effector init-position is {}'.format(self.get_init_position()))
         joint_angles = self.limb_handle.joint_angles()
         self.set_init_joint_angles(joint_angles)
-        logging.info('joint init-angles is {}'.format(self.get_init_joint_angles()))
+        self.logger.info('joint init-angles is {}'.format(self.get_init_joint_angles()))
         self.joint_name = self.limb_handle.joint_names()
 
     def init_gripper(self):
         try:
             self.arm_gripper = intera_interface.Gripper(self.gripper_name, CHECK_VERSION)
-            logging.info("Electric gripper detected.")
+            self.logger.info("Electric gripper detected.")
         except Exception as e:
             self.arm_gripper = None
-            logging.info("No electric gripper detected.")
+            self.logger.info("No electric gripper detected.")
 
     def arm_inverse_kinematics(self, position, orient):
         limb_joints = self.ros_node.ros1_inverse_kinematics(position, orient)
         if limb_joints == 1:
-            logging.info("Service call failed")
+            self.logger.info("Service call failed")
         elif limb_joints == -1:
-            logging.info("INVALID POSE - No Valid Joint Solution Found.")
+            self.logger.info("INVALID POSE - No Valid Joint Solution Found.")
         else:
             return True, limb_joints
         return False, limb_joints
@@ -74,7 +82,7 @@ class Sawyer_control(Base_control):
         success_check, limb_joints = self.arm_inverse_kinematics(position, orient)
         if success_check is True:
             self.limb_handle.move_to_joint_positions(limb_joints)
-            # logging.info("success move robot to [ {} ]".format(self.))
+            # self.logger.info("success move robot to [ {} ]".format(self.))
             return True
         else:
             return False
@@ -110,9 +118,9 @@ class Sawyer_control(Base_control):
         success_check = self.move_robot_to_point(position=grasp_position, orient=grasp_orient)
         if success_check is True:
             self.close_robot_gripper()
-            logging.info("grasp success")
+            self.logger.info("grasp success")
         else:
-            logging.info("grasp fail")
+            self.logger.info("grasp fail")
 
     def record_trajectory(self):
         trajectory_record = self.trajectory_path + self.trajectory_name

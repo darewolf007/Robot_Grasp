@@ -10,7 +10,8 @@ class ros1_function(object):
         self._start_time = rospy.get_time()
         self.rate = rate
     def ros1_init_ros_node(self, node_name, anonymous=True):
-        rospy.init_node(node_name, anonymous=anonymous)
+        if not rospy.core.is_initialized():
+            rospy.init_node(node_name, anonymous=anonymous)
 
     def ros1_robot_sleep(self, time):
         rospy.sleep(time)

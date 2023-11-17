@@ -1,0 +1,7 @@
+robot_name: "Sawyer"
+arm_name: "right"
+ros_node_name: "intera_grasp"
+log_file_path: "/../../tmp/log/"
+log_name: "sawyer_control"
+trajectory_path: ""
+trajectory_name: ""

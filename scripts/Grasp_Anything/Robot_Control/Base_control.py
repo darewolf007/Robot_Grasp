@@ -1,10 +1,13 @@
 class Base_control(object):
     def __init__(self):
+        self.logger = None
         # robot name
         self.robot = None
         self.robot_name = None
         self.arm_name = None
         self.ros_node_name = None
+        self.joint_name = None
+        self.arm_cuff = None
         # robot grasp param
         self.__grasp_center = None
         self.__grasp_orient = None
@@ -16,6 +19,7 @@ class Base_control(object):
         self.__init_position = None
         self.__init_joint_angles = None
         self.__joint_velocities = None
+
 
     # robot enable and initialize
     def enable_robot(self):

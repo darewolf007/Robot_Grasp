@@ -13,29 +13,33 @@ import logging
 class VMRN_Grasp(Process_Grasp):
     def __init__(self, config_path):
         super().__init__()
-        self.set_path(config_path)
-        self.camera = KinectDK()
-        self.get_camera_param()
-        init_logging(self.config_param.get("detector_name"), self.log_path)
-        self.vmrn = VMRN_detector(self.vmrn_path, self.image_path)
-        self.load_eyehand()
-        logger = logging.getLogger(self.config_param.get("detector_name"))
-        logger.info("Starting VMRN Grasp")
-
-    def set_path(self, config_path):
         self.config_param = read_yaml_file(config_path)
+        self.camera = KinectDK()
+        self.set_path()
+        self.get_camera_param()
+        self.init_log()
+        self.load_eyehand()
+        self.vmrn = VMRN_detector(self.vmrn_path, self.image_path)
+
+    def init_log(self):
+        init_logging(self.config_param.get("detector_name"), self.log_path)
+        self.logger = logging.getLogger(self.config_param.get("detector_name"))
+        self.logger.info("Starting VMRN Grasp")
+
+    def set_path(self):
         base_path = os.path.dirname(Grasp_Anything.Configs.__file__)
         self.log_path = base_path + self.config_param.get("log_file_path")
         self.image_path = base_path + self.config_param.get("image_path")
-        self.eye_hand_path = base_path + self.config_param.get("eye_hand_path")
         self.vmrn_path = base_path + self.config_param.get("vmrn_detector_yaml")
+        self.eye_hand_path = base_path + self.config_param.get("eye-hand_path")
 
     def reset(self):
         self.image_index = 0
 
     def load_eyehand(self):
-        self.eye_hand_info = scio.loadmat(self.eye_hand_path)
-        self.eyehand_T, self.eyehand_R = self.eye_hand_info["T"].reshape([3]), self.eye_hand_info["R"].reshape([3, 3])
+        eye_hand_info = read_yaml_file(self.eye_hand_path)
+        self.eyehand_T = np.array(eye_hand_info['Rotation_matrix']).reshape([3])
+        self.eyehand_R = np.array(eye_hand_info['Translation_matrix']).reshape([3, 3])
 
     def get_image(self, index = 0, is_write = True):
         color = self.camera.queue_color.get(timeout=5.0)

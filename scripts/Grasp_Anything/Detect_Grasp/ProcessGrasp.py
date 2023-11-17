@@ -16,6 +16,7 @@ class Process_Grasp(object):
         self.eyehand_T = None
         self.eyehand_R = None
         self.image_index = 0
+        self.logger = None
 
     def run(self):
         pass
