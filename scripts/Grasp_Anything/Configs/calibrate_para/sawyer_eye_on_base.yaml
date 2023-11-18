@@ -1,0 +1,18 @@
+parameters:
+  eye_on_hand: false
+  freehand_robot_movement: true
+  move_group: manipulator
+  move_group_namespace: /
+  namespace: /sawyer_eye_on_base/
+  robot_base_frame: reference/base
+  robot_effector_frame: reference/right_l6
+  tracking_base_frame: rgb_camera_link
+  tracking_marker_frame: camera_marker
+transformation:
+  qw: 0.17083251334944494
+  qx: -0.1316325451928007
+  qy: 0.7175559940238729
+  qz: -0.6622707307960913
+  x: 0.05395685135784892
+  y: 0.9052247125802079
+  z: 0.6778260031859082

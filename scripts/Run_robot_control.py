@@ -7,8 +7,9 @@ import numpy as np
 
 if __name__ == "__main__":
     rospy.init_node('vmrn_grasp_detect')
-    sawyer_robot = Sawyer_control()
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    sawyer_robot = Sawyer_control(script_dir + "/Grasp_Anything/Configs/Sawyer_control.yaml")
     sawyer_robot.init_robot()
     sawyer_robot.set_putdown_position([0.8744617820936951, -0.10845370509646012, 0.359])
-    sawyer_robot.run(np.array([0.,0.25,-0.02]))
+    sawyer_robot.run(np.array([0.,0,0.08]))
     rospy.spin()

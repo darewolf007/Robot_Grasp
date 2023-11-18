@@ -3,6 +3,7 @@ from Grasp_Anything.Scene_Detector.VMRN_detector import VMRN_detector
 from Grasp_Anything.utils.Robot_state_transform import transform_uv_to_xy, transfrom_angle_to_ri
 from Grasp_Anything.Robot_Tools.Camera_Ros1 import KinectDK
 from Grasp_Anything.utils.python_function import init_logging, read_yaml_file
+from scipy.spatial.transform import Rotation
 import scipy.io as scio
 import cv2
 import numpy as np
@@ -38,9 +39,11 @@ class VMRN_Grasp(Process_Grasp):
 
     def load_eyehand(self):
         eye_hand_info = read_yaml_file(self.eye_hand_path)
-        self.eyehand_T = np.array(eye_hand_info['Rotation_matrix']).reshape([3])
-        self.eyehand_R = np.array(eye_hand_info['Translation_matrix']).reshape([3, 3])
-
+        self.eyehand_mode = 'eye_on_hand' if eye_hand_info['parameters']['eye_on_hand'] else 'eye_on_base'
+        self.eyehand_T = np.array([eye_hand_info['transformation']['x'], eye_hand_info['transformation']['y'], eye_hand_info['transformation']['z']]).reshape([3])
+        self.eyehand_R = np.array([eye_hand_info['transformation']['qx'], eye_hand_info['transformation']['qy'], eye_hand_info['transformation']['qz'], eye_hand_info['transformation']['qw']])
+        self.eyehand_R = np.array(Rotation.from_quat(self.eyehand_R).as_matrix())
+        
     def get_image(self, index = 0, is_write = True):
         color = self.camera.queue_color.get(timeout=5.0)
         depth = self.camera.queue_depth.get(timeout=5.0)

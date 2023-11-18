@@ -6,6 +6,7 @@ import intera_interface
 import logging
 import numpy as np
 import os
+import Grasp_Anything.Configs
 
 class Sawyer_control(Base_control):
     def __init__(self, config_path):
@@ -41,7 +42,7 @@ class Sawyer_control(Base_control):
 
     def init_arm(self):
         self.limb_handle = intera_interface.Limb(self.arm_name)
-        self.set_init_position(self.limb_handle.endpoint_pose()['position']) #TODO test what is endpoint joint or end-effector
+        self.set_init_position(self.limb_handle.endpoint_pose()['position'])
         self.logger.info('successful initialize arm !!!!!')
         self.logger.info('end effector init-position is {}'.format(self.get_init_position()))
         joint_angles = self.limb_handle.joint_angles()
