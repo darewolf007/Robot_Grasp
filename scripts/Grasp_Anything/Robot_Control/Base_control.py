@@ -8,6 +8,7 @@ class Base_control(object):
         self.ros_node_name = None
         self.joint_name = None
         self.arm_cuff = None
+        self.effector_offset = None
         # robot grasp param
         self.__grasp_center = None
         self.__grasp_orient = None
@@ -89,10 +90,7 @@ class Base_control(object):
     def get_gripper_velocity(self):
         pass
 
-    def get_joint_angles(self):
-        pass
-
-    def get_end_effector_position(self):
+    def get_end_joint_pose(self):
         pass
 
     def record_trajectory(self):

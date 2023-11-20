@@ -9,6 +9,7 @@ class ros1_function(object):
     def __init__(self, rate = 10):
         self._start_time = rospy.get_time()
         self.rate = rate
+
     def ros1_init_ros_node(self, node_name, anonymous=True):
         if not rospy.core.is_initialized():
             rospy.init_node(node_name, anonymous=anonymous)
@@ -44,10 +45,16 @@ class ros1_function(object):
 
     def ros1_rate(self):
         return rospy.Rate(self.rate)
+    
+    def ros1_shutdown(self):
+        return  True if rospy.is_shutdown() else False
+    
+    def ros1_sleep(self):
+        self.ros1_rate().sleep()
 
 class Sawyer_connect_ros1(ros1_function):
     def __init__(self, arm_name):
-        super(ros1_function, self).__init__()
+        ros1_function.__init__(self)
         self.arm_name = arm_name
         self.inverse_kinematics_srv_name = "ExternalTools/" + self.arm_name + "/PositionKinematicsNode/IKService"
 

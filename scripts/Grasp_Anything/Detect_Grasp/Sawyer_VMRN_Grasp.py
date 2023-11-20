@@ -3,6 +3,7 @@ from Grasp_Anything.Scene_Detector.VMRN_detector import VMRN_detector
 from Grasp_Anything.utils.Robot_state_transform import transform_uv_to_xy, transfrom_angle_to_ri
 from Grasp_Anything.Robot_Tools.Camera_Ros1 import KinectDK
 from Grasp_Anything.utils.python_function import init_logging, read_yaml_file
+from Grasp_Anything.utils import Robot_state_transform
 from scipy.spatial.transform import Rotation
 import scipy.io as scio
 import cv2
@@ -42,8 +43,8 @@ class VMRN_Grasp(Process_Grasp):
         self.eyehand_mode = 'eye_on_hand' if eye_hand_info['parameters']['eye_on_hand'] else 'eye_on_base'
         self.eyehand_T = np.array([eye_hand_info['transformation']['x'], eye_hand_info['transformation']['y'], eye_hand_info['transformation']['z']]).reshape([3])
         self.eyehand_R = np.array([eye_hand_info['transformation']['qx'], eye_hand_info['transformation']['qy'], eye_hand_info['transformation']['qz'], eye_hand_info['transformation']['qw']])
-        self.eyehand_R = np.array(Rotation.from_quat(self.eyehand_R).as_matrix())
-        
+        self.eyehand_R = np.array(Robot_state_transform.transform_quaternion_to_matrix(self.eyehand_R))
+
     def get_image(self, index = 0, is_write = True):
         color = self.camera.queue_color.get(timeout=5.0)
         depth = self.camera.queue_depth.get(timeout=5.0)
@@ -69,7 +70,7 @@ class VMRN_Grasp(Process_Grasp):
     def _run_once(self):
         color_img, depth_img = self.get_image(self.image_index)
         self.vmrn.run_detector(self.image_index)
-        if self.vmrn.relation_result.current_target.id != -1:
+        if self.vmrn.relation_result is not None and self.vmrn.relation_result.current_target.id != -1:
             if len(self.vmrn.grasp_result)>0:
                 obj_id = self.vmrn.relation_result.current_target.id
                 grasps = self.vmrn.grasp_result[obj_id].obj_grasp.grasp

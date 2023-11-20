@@ -1,6 +1,7 @@
 import numpy as np
 from transforms3d.euler import euler2quat, quat2euler
-
+from scipy.spatial.transform import Rotation
+import sys
 
 #TODO add uv shape is 2
 def transform_uv_to_xy(R, t, K, uv, depth):
@@ -50,3 +51,29 @@ def transform_xyz_to_uv(R_W_to_C, t_W_to_C, K, xyz, reverse=False):
     uvw_homogeneous = np.dot(K, transformed_xyz_3d.T).T
     uv = uvw_homogeneous[:, :2] / uvw_homogeneous[:, 2, None]
     return uv
+
+def transform_quaternion_to_euler(quaternion, euler_type = 'zyx'):
+    r = Rotation.from_quat(quaternion)
+    euler = r.as_euler(euler_type, degrees=True)
+    return euler
+
+def transform_quaternion_to_matrix(quaternion):
+    r = Rotation.from_quat(quaternion)
+    if sys.version_info.major == 2:
+        matrix = r.as_dcm()
+    else:
+        matrix = r.as_matrix()
+    return matrix
+
+def transform_euler_to_quaternion(euler, euler_type = 'zyx'):
+    r = Rotation.from_euler(euler_type, euler, degrees=True)
+    quaternion = r.as_quat()
+    return quaternion
+
+def transform_matrix_to_quaternion(matrix):
+    if sys.version_info.major == 2:
+        r = Rotation.from_dcm(matrix)
+    else:
+        r = Rotation.from_matrix(matrix)
+    quaternion = r.as_quat()
+    return quaternion
