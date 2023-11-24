@@ -85,4 +85,10 @@ class VMRN_Grasp(Process_Grasp):
         if request.flag_detect:
             return self._run_once()
 
+    #help me to write a eye on hand code
+    def run_eyehand(self, request):
+        if request.flag_detect:
+            return self._run_once()
+
+
 

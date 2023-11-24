@@ -52,6 +52,7 @@ class Sawyer_control(Base_control):
         self.set_init_joint_angles(joint_angles)
         self.logger.info('joint init-angles is {}'.format(self.get_init_joint_angles()))
         self.joint_name = self.limb_handle.joint_names()
+        self.lights = intera_interface.Lights()
 
     def init_gripper(self):
         try:
@@ -72,14 +73,16 @@ class Sawyer_control(Base_control):
         return False, limb_joints
 
     def open_robot_gripper(self, interval_time = 0.2):
-        self.ros_node.ros1_robot_sleep(interval_time)
-        self.arm_gripper.open()
-        self.ros_node.ros1_robot_sleep(interval_time)
+        if self.arm_gripper.is_ready():
+            self.ros_node.ros1_robot_sleep(interval_time)
+            self.arm_gripper.open()
+            self.ros_node.ros1_robot_sleep(interval_time)
 
     def close_robot_gripper(self, interval_time = 0.2):
-        self.ros_node.ros1_robot_sleep(interval_time)
-        self.arm_gripper.close()
-        self.ros_node.ros1_robot_sleep(interval_time)
+        if self.arm_gripper.is_ready():
+            self.ros_node.ros1_robot_sleep(interval_time)
+            self.arm_gripper.close()
+            self.ros_node.ros1_robot_sleep(interval_time)
 
     def move_robot_to_point(self, position, orient, velocity=0.2):
         self.limb_handle.set_joint_position_speed(velocity)
@@ -235,3 +238,11 @@ class Sawyer_control(Base_control):
         if len(speed) == len(self.joint_name):
             joint_speed = dict([(joint, speed) for i, joint in enumerate(self.joint_name)])
             self.limb_handle.set_joint_position_speed(joint_speed)
+
+    def clean_shutdown(self):
+        self.logger.info("Exiting sawyer control.")
+        self.limb_handle.exit_control_mode()
+
+    def light_action(self, color, value):
+        self.lights.set_light_state('head_{0}_light'.format(color), on=bool(value))
+        self.lights.set_light_state('{0}_hand_{1}_light'.format(self._arm, color),on=bool(value))

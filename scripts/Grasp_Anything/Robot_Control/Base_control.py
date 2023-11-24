@@ -121,6 +121,12 @@ class Base_control(object):
     def move_robot_to_joint_angles(self, angles):
         pass
 
+    def move_robot_to_init_pose(self):
+        pass
+
+    def run_record_trajectory(self, trajectory_name, loops_time, rate):
+        pass
+
     def reset(self):
         pass
 
