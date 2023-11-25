@@ -9,11 +9,11 @@
         <arg name="depth_unit" value="$(arg camera_depth_uint)"/>
     </include>
 
-    <node pkg="Robot_Grasp" type="Record_robot_trajectory.py" name="record_trajectroy_node" output="screen" if="$(arg run_record_trajectory)">
+    <node pkg="robot_grasp" type="Record_robot_trajectory.py" name="record_trajectroy_node" output="screen" if="$(arg run_record_trajectory)">
         <param name="use_keyboard" type="bool" value="$(arg use_keyboard_record_trajectory_method)" />
     </node>
 
-    <node pkg="Robot_Grasp" type="Run_robot_control.py" name="sawyer_run_node" output="screen" if="$(arg run_robot_control)">
+    <node pkg="robot_grasp" type="Run_robot_control.py" name="sawyer_run_node" output="screen" if="$(arg run_robot_control)">
     </node>
 
 </launch>
