@@ -1,7 +1,7 @@
 # Robot_Grasp
 ## Introduction
     this is a robot grasp project, which is based on the robot operating system(ROS) and sawyer robot.
-    The project is mainly divided into two parts: the first part is the simulation of the robot grasping process, and the second part is the real robot grasping process.
+    The project is mainly divided into two parts: the first part is the the robot control process, and the second part is the robot grasping algorithm.
 ## How to use
 ### first terminal
         ./intera.sh
