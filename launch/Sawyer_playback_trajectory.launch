@@ -1,0 +1,4 @@
+    <launch>
+        <node pkg="Robot_Grasp" type="Replay_robot_trajectory.py" name="replay_trajectroy_node" output="screen">
+        </node>
+    </launch>

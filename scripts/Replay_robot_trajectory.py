@@ -9,13 +9,8 @@ if __name__ == "__main__":
     script_dir = os.path.dirname(os.path.abspath(__file__))
     sawyer_robot = Sawyer_control(script_dir + "/Grasp_Anything/Configs/Sawyer_control.yaml")
     sawyer_robot.init_robot()
-    use_keyboard = rospy.get_param('~use_keyboard')
     try:
-        while not rospy.is_shutdown():
-            if use_keyboard:
-                sawyer_robot.keyboard_record_trajectory()
-            else:
-                sawyer_robot.run_record_trajectory()
+        sawyer_robot.run_record_trajectory()
     except Exception as e:
-        print("something bad happend when record_trajectory!!!!")
-        print("error is: ", e)
+         print("something bad happend!!!!")
+         print("error is: ", e)

@@ -1,14 +1,17 @@
+# -*- coding: UTF-8 -*-
 from .Base_control import Base_control
 from Grasp_Anything.utils import Robot_connect_by_ros1
 from Grasp_Anything.utils import Robot_state_transform
 from intera_interface import CHECK_VERSION
 from Grasp_Anything.utils.python_function import init_logging, read_yaml_file
 import intera_interface
+import intera_external_devices
 import logging
 import numpy as np
 import os
 import Grasp_Anything.Configs
 import sys
+import threading
 
 class Sawyer_control(Base_control):
     def __init__(self, config_path):
@@ -24,6 +27,7 @@ class Sawyer_control(Base_control):
         self.ros_node_name = self.config_param.get("ros_node_name")
         self.trajectory_name = self.config_param.get("trajectory_name")
         self.ros_node = Robot_connect_by_ros1.Sawyer_connect_ros1(self.arm_name)
+        self.keyboard_event = None
 
     def set_path(self):
         base_path = os.path.dirname(Grasp_Anything.Configs.__file__)
@@ -145,6 +149,7 @@ class Sawyer_control(Base_control):
         return self.arm_gripper.get_cmd_velocity()
     
     def record_trajectory(self, trajectory_name = None):
+        self.ros_node.ros1_log(" record trajectory")
         if trajectory_name is not None:
             self.trajectory_name = trajectory_name
         trajectory_record = self.trajectory_path + self.trajectory_name
@@ -168,6 +173,68 @@ class Sawyer_control(Base_control):
                     if self.arm_gripper:
                         f.write(str(self.get_end_effector_position()) + '\n')
                     self.ros_node.ros1_rate().sleep() 
+
+    def get_keyboard_event(self):
+        event_done = False
+        self.logger.info("get keyboard event, q to quit.")
+        while not event_done and not self.ros_node.ros1_done():
+            keyboard_result = intera_external_devices.getch()
+            if keyboard_result:
+                if keyboard_result in ['\x1b', '\x03', 'q']:
+                    self.keyboard_event = keyboard_result
+                    event_done = True
+                    self.logger.info("keyboard event shut down")
+                    self.ros_node.ros1_log("keyboard event shut down")
+                    self.ros_node.ros1_signal_shutdown("keyboard event shut down")
+                else:
+                    self.ros_node.ros1_log("keyboard {} is detect".format(str(keyboard_result)))
+                    self.keyboard_event = keyboard_result
+
+    def keyboard_record_trajectory(self):
+        trajectory_record = self.trajectory_path + self.trajectory_name
+        self.arm_cuff = intera_interface.Cuff(self.arm_name)
+        if trajectory_record:
+            with open(trajectory_record, 'w') as f:
+                f.write('time,')
+                temp_str = '' if self.arm_gripper else '\n'
+                f.write(','.join([j for j in self.joint_name]) + ',' + temp_str)
+                if self.arm_gripper:
+                    f.write(self.gripper_name + '\n')
+                while not self.ros_node.ros1_done() :
+                    if self.keyboard_event  == 'b':
+                        print("start recordnow")
+                        if self.arm_gripper:
+                            if self.arm_cuff.upper_button():
+                                self.arm_gripper.open()
+                            elif self.arm_cuff.lower_button():
+                                self.arm_gripper.close()
+                        angles_right = self.get_joint_angles()
+                        f.write("%f," % (self.ros_node.ros1_time_stamp(),))
+                        f.write(','.join([str(x) for x in angles_right]) + ',' + temp_str)
+                        if self.arm_gripper:
+                            f.write(str(self.get_end_effector_position()) + '\n')
+                        self.ros_node.ros1_rate().sleep() 
+                    elif self.keyboard_event == 'q':
+                        self.ros_node.ros1_log("keyboard record trajectory shut done")
+                        break
+                    else:
+                        self.ros_node.ros1_rate().sleep()
+        
+    def thread_record_trajectory(self, trajectory_name = None):
+        self.ros_node.ros1_log("use keyboard record trajectory")
+        self.ros_node.ros1_log("Press 'b' to record trajectory")
+        self.ros_node.ros1_log("Press 'q' to quit")
+        if trajectory_name is not None:
+            self.trajectory_name = trajectory_name
+        thread_one = threading.Thread(target=self.get_keyboard_event)
+        thread_two = threading.Thread(target=self.keyboard_record_trajectory)
+
+        thread_one.start()
+        thread_two.start()
+
+        thread_one.join()
+        thread_two.join()
+        self.ros_node.ros1_log("all threads have been done")
 
     def get_end_effector_position(self):
         return self.arm_gripper.get_position()
@@ -193,12 +260,13 @@ class Sawyer_control(Base_control):
 
     def run_record_trajectory(self, trajectory_name = None, loops_time = 1, rate = 100):
         self.logger.info("start run record trajectory!!!!!!")
+        self.ros_node.ros1_log("record trajectory begin")
         ros1_node = Robot_connect_by_ros1.ros1_function(rate)
         if self.arm_gripper.has_error():
             self.arm_gripper.reboot()
         if not self.arm_gripper.is_calibrated():
             self.arm_gripper.calibrate()
-        trajectory = self.trajectory_path + trajectory_name if trajectory_name is not None else self.trajectory_name
+        trajectory = self.trajectory_path + (trajectory_name if trajectory_name is not None else self.trajectory_name)
         with open(trajectory, 'r') as f:
             lines = f.readlines()
         keys = lines[0].rstrip().split(',')

@@ -22,7 +22,7 @@ class ros1_function(object):
         rospy.set_param('/rosout/format', "[$time][$severity][$logger]: $msg")
         rospy.set_param('/rosout/output_file', log_path+log_name)
 
-    def ros1_log(self, log_info, mode="debug"):
+    def ros1_log(self, log_info, mode="info"):
         if mode == "debug":
             rospy.logdebug(log_info)
         elif mode == "info":
@@ -52,6 +52,9 @@ class ros1_function(object):
     def ros1_sleep(self):
         self.ros1_rate().sleep()
 
+    def ros1_signal_shutdown(self, message):
+        rospy.signal_shutdown(message)
+
 class Sawyer_connect_ros1(ros1_function):
     def __init__(self, arm_name):
         ros1_function.__init__(self)
@@ -80,6 +83,7 @@ class Sawyer_connect_ros1(ros1_function):
             return -1
 
     def ros1_receive_grasp_infor(self):
+        rospy.wait_for_service('vmrn_detection')
         obj_grasp = rospy.ServiceProxy('vmrn_detection', VmrnDetection)
         response_grasp = obj_grasp.call(True)
         return response_grasp.grasp_center, response_grasp.grasp_ori

@@ -163,7 +163,10 @@ include_directories(
 ## Mark executable scripts (Python etc.) for installation
 ## in contrast to setup.py, you can choose the destination
 catkin_install_python(PROGRAMS
-   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+  scripts/Run_robot_control.py
+  scripts/Record_robot_trajectory.py
+  scripts/Replay_robot_trajectory.py
+  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
  )
 
 ## Mark executables for installation
