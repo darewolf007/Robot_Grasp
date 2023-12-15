@@ -3,7 +3,7 @@
     <arg name="run_robot_control" default="true"/>
     <arg name="run_record_trajectory" default="true"/>
     <arg name="camera_depth_uint" default="32FC1"/>
-    <arg name="use_keyboard_record_trajectory_method" default="false"/>    
+    <arg name="use_keyboard_record_trajectory_method" default="true"/>    
 
     <include file="$(find azure_kinect_ros_driver)/launch/driver.launch" if="$(arg run_camera)">
         <arg name="depth_unit" value="$(arg camera_depth_uint)"/>

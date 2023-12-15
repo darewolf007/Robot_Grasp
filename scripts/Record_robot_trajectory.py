@@ -13,9 +13,9 @@ if __name__ == "__main__":
     try:
         while not rospy.is_shutdown():
             if use_keyboard:
-                sawyer_robot.keyboard_record_trajectory()
+                sawyer_robot.thread_record_trajectory()
             else:
-                sawyer_robot.run_record_trajectory()
+                sawyer_robot.record_trajectory()
     except Exception as e:
         print("something bad happend when record_trajectory!!!!")
         print("error is: ", e)

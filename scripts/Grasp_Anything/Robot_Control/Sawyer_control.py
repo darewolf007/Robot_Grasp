@@ -267,6 +267,7 @@ class Sawyer_control(Base_control):
         if not self.arm_gripper.is_calibrated():
             self.arm_gripper.calibrate()
         trajectory = self.trajectory_path + (trajectory_name if trajectory_name is not None else self.trajectory_name)
+        print(trajectory)
         with open(trajectory, 'r') as f:
             lines = f.readlines()
         keys = lines[0].rstrip().split(',')
